@@ -17,6 +17,8 @@ namespace CheckoutSimu
             {
                 {"A", 50 },
                 {"B", 30 },
+                {"C", 20 },
+                {"D", 15 },
             };
 
             itemSpecialPrices = new Dictionary<string, (int quantity, int specialPrice)>
