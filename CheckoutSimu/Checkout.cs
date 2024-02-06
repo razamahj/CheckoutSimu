@@ -10,12 +10,19 @@ namespace CheckoutSimu
     {
         private Dictionary<string, int> itemPrices;
         private Dictionary<string, int> scannedItems;
-
+        private Dictionary<string, (int quantity, int specialPrice)> itemSpecialPrices;
         public Checkout()
         {
             itemPrices = new Dictionary<string, int>
             {
                 {"A", 50 },
+                {"B", 30 },
+            };
+
+            itemSpecialPrices = new Dictionary<string, (int quantity, int specialPrice)>
+            {
+                {"A", (3, 130) },
+                {"B", (2, 45) }
             };
 
             scannedItems = new Dictionary<string, int>();
@@ -29,7 +36,17 @@ namespace CheckoutSimu
                 string item = entry.Key;
                 int quantity = entry.Value;
 
-                totalPrice += quantity * itemPrices[item];
+                if(itemSpecialPrices.ContainsKey(item) && quantity >= itemSpecialPrices[item].quantity)
+                {
+                    int specialPriceGroup = quantity / itemSpecialPrices[item].quantity;
+                    int remainingItems = quantity % itemSpecialPrices[item].quantity;
+
+                    totalPrice += (specialPriceGroup * itemSpecialPrices[item].specialPrice) + (remainingItems * itemPrices[item]);
+                }
+                else
+                {
+                    totalPrice += quantity * itemPrices[item];
+                }
             }
 
             return totalPrice;
