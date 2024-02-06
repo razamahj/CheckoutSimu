@@ -1,3 +1,5 @@
+using CheckoutSimu;
+
 namespace CheckoutSimuTest
 {
     [TestFixture]

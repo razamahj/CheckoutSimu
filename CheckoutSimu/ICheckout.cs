@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace CheckoutSimu
 {
-    public class Class1
+    public interface ICheckout
     {
+        void Scan(string item);
+
+        int GetTotalPrice();
     }
 }
