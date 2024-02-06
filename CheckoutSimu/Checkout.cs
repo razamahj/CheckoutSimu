@@ -8,26 +8,12 @@ namespace CheckoutSimu
 {
     public class Checkout : ICheckout
     {
-        private Dictionary<string, int> itemPrices;
-        private Dictionary<string, int> scannedItems;
-        private Dictionary<string, (int quantity, int specialPrice)> itemSpecialPrices;
-        public Checkout()
+        private readonly IPricingRules pricingRules;
+        private readonly Dictionary<string, int> scannedItems;
+        public Checkout(IPricingRules pricingRules)
         {
-            itemPrices = new Dictionary<string, int>
-            {
-                {"A", 50 },
-                {"B", 30 },
-                {"C", 20 },
-                {"D", 15 },
-            };
-
-            itemSpecialPrices = new Dictionary<string, (int quantity, int specialPrice)>
-            {
-                {"A", (3, 130) },
-                {"B", (2, 45) }
-            };
-
             scannedItems = new Dictionary<string, int>();
+            this.pricingRules = pricingRules ?? throw new ArgumentNullException(nameof(pricingRules));
         }
         public int GetTotalPrice()
         {
@@ -38,16 +24,16 @@ namespace CheckoutSimu
                 string item = entry.Key;
                 int quantity = entry.Value;
 
-                if(itemSpecialPrices.ContainsKey(item) && quantity >= itemSpecialPrices[item].quantity)
+                if(pricingRules.SpecialPrices.ContainsKey(item) && quantity >= pricingRules.SpecialPrices[item].quantity)
                 {
-                    int specialPriceGroup = quantity / itemSpecialPrices[item].quantity;
-                    int remainingItems = quantity % itemSpecialPrices[item].quantity;
+                    int specialPriceGroup = quantity / pricingRules.SpecialPrices[item].quantity;
+                    int remainingItems = quantity % pricingRules.SpecialPrices[item].quantity;
 
-                    totalPrice += (specialPriceGroup * itemSpecialPrices[item].specialPrice) + (remainingItems * itemPrices[item]);
+                    totalPrice += (specialPriceGroup * pricingRules.SpecialPrices[item].specialPrice) + (remainingItems * pricingRules.ItemPrices[item]);
                 }
                 else
                 {
-                    totalPrice += quantity * itemPrices[item];
+                    totalPrice += quantity * pricingRules.ItemPrices[item];
                 }
             }
 
@@ -57,7 +43,7 @@ namespace CheckoutSimu
 
         public void Scan(string item)
         {
-            if (itemPrices.ContainsKey(item))
+            if (pricingRules.ItemPrices.ContainsKey(item))
             {
                 scannedItems[item] = scannedItems.ContainsKey(item) ? scannedItems[item] + 1 : 1;
             }
