@@ -1,4 +1,5 @@
 using CheckoutSimu;
+using Moq;
 
 namespace CheckoutSimuTest
 {
@@ -9,7 +10,11 @@ namespace CheckoutSimuTest
         public void GetTotalPrice_EmptyCart_ReturnsZero()
         {
             //Arrange
-            ICheckout checkout = new Checkout();
+            var pricingRulesMock = new Mock<IPricingRules>();
+            pricingRulesMock.Setup(p => p.ItemPrices).Returns(new Dictionary<string, int> { { "A", 50 } });
+            pricingRulesMock.Setup(p => p.SpecialPrices).Returns(new Dictionary<string, SpecialPrice>());
+
+            ICheckout checkout = new Checkout(pricingRulesMock.Object);
 
             //Act and Assert 
             Assert.That(checkout.GetTotalPrice(), Is.EqualTo(0));
@@ -19,7 +24,11 @@ namespace CheckoutSimuTest
         public void GetTotalPrice_UnknownItem_IgnoresItem()
         {
             //Arrange
-            ICheckout checkout = new Checkout();
+            var pricingRulesMock = new Mock<IPricingRules>();
+            pricingRulesMock.Setup(p => p.ItemPrices).Returns(new Dictionary<string, int> { { "A", 50 } });
+            pricingRulesMock.Setup(p => p.SpecialPrices).Returns(new Dictionary<string, SpecialPrice>());
+
+            ICheckout checkout = new Checkout(pricingRulesMock.Object);
 
             //Act
             checkout.Scan("X");
@@ -32,7 +41,11 @@ namespace CheckoutSimuTest
         public void GetTotalPrice_MultipleSpecialPrices_ReturnsCorrectPrice()
         {
             //Arrange
-            ICheckout checkout = new Checkout();
+            var pricingRulesMock = new Mock<IPricingRules>();
+            pricingRulesMock.Setup(p => p.ItemPrices).Returns(new Dictionary<string, int> { { "A", 50 } });
+            pricingRulesMock.Setup(p => p.SpecialPrices).Returns(new Dictionary<string, SpecialPrice> { { "A", new SpecialPrice { quantity = 3, specialPrice = 130 } } });
+
+            ICheckout checkout = new Checkout(pricingRulesMock.Object);
 
             //Act
             checkout.Scan("A");
@@ -49,7 +62,10 @@ namespace CheckoutSimuTest
         public void GetTotalPrice_MixedItems_ReturnsCorrectPrice()
         {
             //Arrange
-            ICheckout checkout = new Checkout();
+            var pricingRulesMock = new Mock<IPricingRules>();
+            pricingRulesMock.Setup(p => p.ItemPrices).Returns(new Dictionary<string, int> { { "A", 50 }, { "B", 30 }, { "C", 20 }, { "D", 15 } });
+            pricingRulesMock.Setup(p => p.SpecialPrices).Returns(new Dictionary<string, SpecialPrice>());
+            ICheckout checkout = new Checkout(pricingRulesMock.Object);
 
             //Act
             checkout.Scan("A");
@@ -65,7 +81,10 @@ namespace CheckoutSimuTest
         public void GetTotalPrice_SingleItem_ReturnsCorrectPrice()
         {
             //Arrange
-            ICheckout checkout = new Checkout();
+            var pricingRulesMock = new Mock<IPricingRules>();
+            pricingRulesMock.Setup(p => p.ItemPrices).Returns(new Dictionary<string, int> { { "A", 50 }, { "B", 30 }, { "C", 20 }, { "D", 15 } });
+            pricingRulesMock.Setup(p => p.SpecialPrices).Returns(new Dictionary<string, SpecialPrice>());
+            ICheckout checkout = new Checkout(pricingRulesMock.Object);
 
             //Act
             checkout.Scan("A");
@@ -78,7 +97,10 @@ namespace CheckoutSimuTest
         public void GetTotalPrice_MultipleItems_ReturnsCorrectPrice()
         {
             //Arrange
-            ICheckout checkout = new Checkout();
+            var pricingRulesMock = new Mock<IPricingRules>();
+            pricingRulesMock.Setup(p => p.ItemPrices).Returns(new Dictionary<string, int> { { "A", 50 }, { "B", 30 }, { "C", 20 }, { "D", 15 } });
+            pricingRulesMock.Setup(p => p.SpecialPrices).Returns(new Dictionary<string, SpecialPrice> { { "A", new SpecialPrice { quantity = 3, specialPrice = 130 } }, { "B", new SpecialPrice { quantity = 2, specialPrice = 45 } } });
+            ICheckout checkout = new Checkout(pricingRulesMock.Object);
 
             //Act
             checkout.Scan("A");
@@ -96,7 +118,10 @@ namespace CheckoutSimuTest
         public void GetTotalPrice_OrderOfScanning_ReturnsCorrectPrice()
         {
             //Arrange
-            ICheckout checkout = new Checkout();
+            var pricingRulesMock = new Mock<IPricingRules>();
+            pricingRulesMock.Setup(p => p.ItemPrices).Returns(new Dictionary<string, int> { { "A", 50 }, { "B", 30 }, { "C", 20 }, { "D", 15 } });
+            pricingRulesMock.Setup(p => p.SpecialPrices).Returns(new Dictionary<string, SpecialPrice> { { "A", new SpecialPrice { quantity = 3, specialPrice = 130 } }, { "B", new SpecialPrice { quantity = 2, specialPrice = 45 } } });
+            ICheckout checkout = new Checkout(pricingRulesMock.Object);
 
             //Act
             checkout.Scan("B");
@@ -112,8 +137,11 @@ namespace CheckoutSimuTest
         public void GetTotalPrice_MultipleCheckoutInstances_ReturnsCorrectPrice()
         {
             //Arrange
-            ICheckout checkout1 = new Checkout();
-            ICheckout checkout2 = new Checkout();
+            var pricingRulesMock = new Mock<IPricingRules>();
+            pricingRulesMock.Setup(p => p.ItemPrices).Returns(new Dictionary<string, int> { { "A", 50 }, { "B", 30 }, { "C", 20 }, { "D", 15 } });
+            pricingRulesMock.Setup(p => p.SpecialPrices).Returns(new Dictionary<string, SpecialPrice> { { "A", new SpecialPrice { quantity = 3, specialPrice = 130 } }, { "B", new SpecialPrice { quantity = 2, specialPrice = 45 } } });
+            ICheckout checkout1 = new Checkout(pricingRulesMock.Object);
+            ICheckout checkout2 = new Checkout(pricingRulesMock.Object);
 
             //Act
             checkout1.Scan("A");
@@ -124,12 +152,14 @@ namespace CheckoutSimuTest
             Assert.That(checkout2.GetTotalPrice(), Is.EqualTo(50));
         }
 
-
         [Test]
         public void GetTotalPrice_SpecialPrice_ReturnsCorrectPrice()
         {
             //Arrange
-            ICheckout checkout = new Checkout();
+            var pricingRulesMock = new Mock<IPricingRules>();
+            pricingRulesMock.Setup(p => p.ItemPrices).Returns(new Dictionary<string, int> { { "A", 50 }, { "B", 30 }, { "C", 20 }, { "D", 15 } });
+            pricingRulesMock.Setup(p => p.SpecialPrices).Returns(new Dictionary<string, SpecialPrice> { { "A", new SpecialPrice { quantity = 3, specialPrice = 130 } }, { "B", new SpecialPrice { quantity = 2, specialPrice = 45 } } });
+            ICheckout checkout = new Checkout(pricingRulesMock.Object);
 
             //Act
             checkout.Scan("B");
